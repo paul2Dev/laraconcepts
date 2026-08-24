@@ -5,11 +5,12 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
         <title>Concepts — {{ config('app.name', 'Laravel') }}</title>
+        <meta name="csrf-token" content="{{ csrf_token() }}">
 
         @fonts
 
         @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
-            @vite(['resources/css/app.css'])
+            @vite(['resources/css/app.css', 'resources/js/app.js'])
         @endif
     </head>
     <body class="min-h-screen bg-bg font-sans text-fg antialiased">
@@ -26,7 +27,10 @@
                     <ul class="mt-4 divide-y divide-border rounded-xl border border-border bg-surface">
                         @foreach ($entries as $entry)
                             @php $concept = $entry['concept']; @endphp
-                            <li class="flex items-center justify-between gap-4 px-5 py-4 transition-colors hover:bg-surface-hover">
+                            <li
+                                x-data="conceptToggle('{{ $concept->slug }}', @js($entry['active']))"
+                                class="flex items-center justify-between gap-4 px-5 py-4 transition-colors hover:bg-surface-hover"
+                            >
                                 <div class="min-w-0">
                                     <p class="font-medium">
                                         @if (Route::has($concept->demoRoute))
@@ -40,23 +44,24 @@
                                 </div>
 
                                 <div class="flex shrink-0 items-center gap-4">
-                                    <span class="inline-flex items-center gap-1.5 text-xs font-medium {{ $entry['active'] ? 'text-accent' : 'text-fg-subtle' }}">
-                                        <span class="h-1.5 w-1.5 rounded-full {{ $entry['active'] ? 'bg-accent' : 'bg-fg-subtle' }}"></span>
-                                        {{ $entry['active'] ? 'On' : 'Off' }}
+                                    <span
+                                        class="inline-flex items-center gap-1.5 text-xs font-medium"
+                                        :class="active ? 'text-accent' : 'text-fg-subtle'"
+                                    >
+                                        <span class="h-1.5 w-1.5 rounded-full" :class="active ? 'bg-accent' : 'bg-fg-subtle'"></span>
+                                        <span x-text="active ? 'On' : 'Off'">{{ $entry['active'] ? 'On' : 'Off' }}</span>
                                     </span>
 
-                                    <form method="POST" action="{{ route('concepts.toggle', $concept->slug) }}">
-                                        @csrf
-                                        @if ($entry['active'])
-                                            <button type="submit" class="rounded-md border border-border px-3 py-1.5 text-xs font-medium text-fg-muted transition-colors hover:bg-surface-hover hover:text-fg">
-                                                Deactivate
-                                            </button>
-                                        @else
-                                            <button type="submit" class="rounded-md bg-accent px-3 py-1.5 text-xs font-medium text-accent-fg transition-colors hover:bg-accent-hover">
-                                                Activate
-                                            </button>
-                                        @endif
-                                    </form>
+                                    <button
+                                        type="button"
+                                        @click="toggle()"
+                                        :disabled="pending"
+                                        class="rounded-md px-3 py-1.5 text-xs font-medium transition-colors disabled:opacity-50"
+                                        :class="active
+                                            ? 'border border-border text-fg-muted hover:bg-surface-hover hover:text-fg'
+                                            : 'bg-accent text-accent-fg hover:bg-accent-hover'"
+                                        x-text="active ? 'Deactivate' : 'Activate'"
+                                    >{{ $entry['active'] ? 'Deactivate' : 'Activate' }}</button>
                                 </div>
                             </li>
                         @endforeach

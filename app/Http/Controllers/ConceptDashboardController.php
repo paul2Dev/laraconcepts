@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Platform\ConceptRegistry;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Laravel\Pennant\Feature;
 
@@ -21,11 +23,15 @@ class ConceptDashboardController extends Controller
         return view('concepts.dashboard', ['groups' => $groups]);
     }
 
-    public function toggle(string $concept, ConceptRegistry $registry): RedirectResponse
+    public function toggle(Request $request, string $concept, ConceptRegistry $registry): RedirectResponse|JsonResponse
     {
         abort_unless($registry->has($concept), 404);
 
         Feature::active($concept) ? Feature::deactivate($concept) : Feature::activate($concept);
+
+        if ($request->wantsJson()) {
+            return response()->json(['active' => Feature::active($concept)]);
+        }
 
         return redirect()->route('concepts.dashboard');
     }

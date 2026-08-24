@@ -59,3 +59,13 @@ it('refuses to toggle a concept that is not registered', function () {
 
     $response->assertNotFound();
 });
+
+it('toggles a concept flag via JSON without redirecting, for reactive callers', function () {
+    Feature::deactivate('fixture-concept');
+
+    $response = $this->postJson(route('concepts.toggle', 'fixture-concept'));
+
+    $response->assertOk();
+    $response->assertJson(['active' => true]);
+    expect(Feature::active('fixture-concept'))->toBeTrue();
+});
