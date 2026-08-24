@@ -43,25 +43,27 @@
                                     <p class="mt-1 truncate text-sm text-fg-muted">{{ $concept->description }}</p>
                                 </div>
 
-                                <div class="flex shrink-0 items-center gap-4">
+                                <div class="flex shrink-0 items-center gap-3">
                                     <span
-                                        class="inline-flex items-center gap-1.5 text-xs font-medium"
+                                        class="text-xs font-medium"
                                         :class="active ? 'text-accent' : 'text-fg-subtle'"
-                                    >
-                                        <span class="h-1.5 w-1.5 rounded-full" :class="active ? 'bg-accent' : 'bg-fg-subtle'"></span>
-                                        <span x-text="active ? 'On' : 'Off'">{{ $entry['active'] ? 'On' : 'Off' }}</span>
-                                    </span>
+                                        x-text="active ? 'On' : 'Off'"
+                                    >{{ $entry['active'] ? 'On' : 'Off' }}</span>
 
                                     <button
                                         type="button"
+                                        role="switch"
+                                        :aria-checked="active.toString()"
                                         @click="toggle()"
                                         :disabled="pending"
-                                        class="rounded-md px-3 py-1.5 text-xs font-medium transition-colors disabled:opacity-50"
-                                        :class="active
-                                            ? 'border border-border text-fg-muted hover:bg-surface-hover hover:text-fg'
-                                            : 'bg-accent text-accent-fg hover:bg-accent-hover'"
-                                        x-text="active ? 'Deactivate' : 'Activate'"
-                                    >{{ $entry['active'] ? 'Deactivate' : 'Activate' }}</button>
+                                        class="relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg disabled:opacity-50"
+                                        :class="active ? 'bg-accent' : 'bg-surface-hover border border-border-strong'"
+                                    >
+                                        <span
+                                            class="inline-block h-4 w-4 transform rounded-full bg-fg shadow transition-transform"
+                                            :class="active ? 'translate-x-6' : 'translate-x-1'"
+                                        ></span>
+                                    </button>
                                 </div>
                             </li>
                         @endforeach
