@@ -76,7 +76,7 @@ returning, on both the empty-file short-circuit and the normal chunked path.
   strictly increasing and end at 100; the upload route's flag-off gate returning `503`
   with the `unavailable` body; the demo page itself returning `503` when the flag is off
   and `200` when it's on; and the dashboard listing under "Real-time".
-- Manually: `sail up -d` (the `queue` service — see Notes — must be running), toggle
+- Manually: `sail up -d` (the `horizon` service — see Notes — must be running), toggle
   "Job Progress" on from `/concepts`, follow its demo link to
   `/concepts/job-progress/demo`, and upload any reasonably sized file — the progress bar
   fills live as Reverb events arrive, no page reload or polling involved. Toggling the flag
@@ -89,14 +89,13 @@ runs the job inline before the HTTP response returns — the whole chunked broad
 already happened by the time the test asserts on it, no `Bus::fake()`/manual `handle()` call
 needed. `Storage::fake('local')` keeps uploaded test fixtures off the real disk regardless.
 
-**Sail had no queue worker.** `QUEUE_CONNECTION=database` (the app default) means
-`ProcessUploadJob::dispatch()` just inserts a row into the `jobs` table — nothing consumes it
-without a worker process. Every earlier module ran its logic synchronously inside the request,
-so this never came up before. Added a `queue` service to `compose.yaml` running
-`php artisan queue:listen --tries=1`, the same shape as ticket 08's `reverb` service — without
-it, uploads sit at 0% forever with a job silently stuck in the `jobs` table. Ticket 10
-(Horizon) will likely supervise queues properly later; this is the minimal fix to make this
-module actually work today.
+**Supervised by Horizon, on the `redis` queue connection.** `QUEUE_CONNECTION=redis` is the
+app default (see `horizon-dashboard`'s README for why Redis was introduced), so
+`ProcessUploadJob::dispatch()` pushes onto Redis and the `horizon` Sail service
+(`php artisan horizon`) picks it up — visible on `/horizon`'s dashboard as a completed job
+under the `default` queue. This module originally shipped before ticket 10 (Horizon) landed,
+running against Sail's own `queue:listen` on the `database` connection instead; that service
+was retired once Horizon existed to supervise the same job properly.
 
 **Module routes had no `web` middleware group — silently, since ticket 04.** Every concept
 module registers its routes with `Route::get()`/`Route::post()` straight from its own

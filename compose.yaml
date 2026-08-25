@@ -27,6 +27,7 @@ services:
             - mysql
             - redis
             - reverb
+            - horizon
     reverb:
         <<: *sail-app
         ports:
@@ -35,15 +36,6 @@ services:
             WWWUSER: '${WWWUSER}'
             LARAVEL_SAIL: 1
         command: ['php', 'artisan', 'reverb:start']
-        depends_on:
-            mysql:
-                condition: service_healthy
-    queue:
-        <<: *sail-app
-        environment:
-            WWWUSER: '${WWWUSER}'
-            LARAVEL_SAIL: 1
-        command: ['php', 'artisan', 'queue:listen', '--tries=1']
         depends_on:
             mysql:
                 condition: service_healthy
