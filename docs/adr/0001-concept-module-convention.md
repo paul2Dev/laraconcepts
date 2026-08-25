@@ -16,6 +16,11 @@ Every proof-of-concept built on this platform needs to be isolated from every ot
 - The concept's slug is also its Pennant feature flag name — no separate flag-naming scheme.
 - The module's own demo route checks `Feature::active($slug)` before running its logic, returning a non-200 response when the flag is off. Gating is the demo route's own responsibility, not the registry's or the dashboard's.
 - The dashboard (`App\Http\Controllers\ConceptDashboardController`) reads `ConceptRegistry` and never hand-lists concepts — adding a module never touches dashboard or registry code.
+- Each module ships a `README.md` in its own folder, always in this four-section shape (see any existing module for reference):
+  - **What it demonstrates** — the route(s), the two states (on/off, or whatever the concept contrasts), what the response proves.
+  - **How it works** — the non-obvious implementation decisions and why, written for someone learning the concept, not a restatement of the code.
+  - **Testing** — the Pest filter to run, and how to exercise the demo manually.
+  - **Notes** — known limitations, tradeoffs, or infrastructure hiccups hit while building it, kept short.
 
 ## Consequences
 
