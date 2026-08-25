@@ -7,6 +7,7 @@ arch('controllers are suffixed "Controller"')
         'App\Http\Controllers',
         'App\Modules\CacheBenchmark\Http\Controllers',
         'App\Modules\CustomCasts\Http\Controllers',
+        'App\Modules\SemanticSearch\Http\Controllers',
     ])
     ->classes()
     ->toHaveSuffix('Controller');
@@ -17,6 +18,7 @@ arch('service providers are suffixed "ServiceProvider"')
         'App\Platform\ConceptRegistryServiceProvider',
         'App\Modules\CacheBenchmark\CacheBenchmarkServiceProvider',
         'App\Modules\CustomCasts\CustomCastsServiceProvider',
+        'App\Modules\SemanticSearch\SemanticSearchServiceProvider',
     ])
     ->toHaveSuffix('ServiceProvider');
 

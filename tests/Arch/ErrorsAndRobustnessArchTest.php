@@ -9,7 +9,10 @@ arch()->preset()->php();
 arch()->preset()->security();
 
 arch('casts validate their input and fail fast on the wrong type')
-    ->expect('App\Modules\CustomCasts\Casts')
+    ->expect([
+        'App\Modules\CustomCasts\Casts',
+        'App\Modules\SemanticSearch\Casts',
+    ])
     ->classes()
     ->toImplement('Illuminate\Contracts\Database\Eloquent\CastsAttributes');
 

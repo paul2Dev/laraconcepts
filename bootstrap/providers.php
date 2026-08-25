@@ -3,6 +3,7 @@
 use App\Modules\CacheBenchmark\CacheBenchmarkServiceProvider;
 use App\Modules\CustomCasts\CustomCastsServiceProvider;
 use App\Modules\RateLimitDemo\RateLimitDemoServiceProvider;
+use App\Modules\SemanticSearch\SemanticSearchServiceProvider;
 use App\Platform\ConceptRegistryServiceProvider;
 use App\Providers\AppServiceProvider;
 
@@ -12,4 +13,5 @@ return [
     CacheBenchmarkServiceProvider::class,
     CustomCastsServiceProvider::class,
     RateLimitDemoServiceProvider::class,
+    SemanticSearchServiceProvider::class,
 ];
