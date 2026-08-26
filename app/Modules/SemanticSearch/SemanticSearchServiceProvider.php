@@ -15,6 +15,7 @@ class SemanticSearchServiceProvider extends ServiceProvider
     public function boot(ConceptRegistry $registry): void
     {
         $this->loadMigrationsFrom(__DIR__.'/database/migrations');
+        $this->loadViewsFrom(__DIR__.'/resources/views', 'semantic-search');
 
         $registry->register(new ConceptRegistration(
             slug: self::SLUG,
