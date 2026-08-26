@@ -1,5 +1,6 @@
 <?php
 
+use App\Modules\AuditLog\AuditLogServiceProvider;
 use App\Modules\CacheBenchmark\CacheBenchmarkServiceProvider;
 use App\Modules\CustomCasts\CustomCastsServiceProvider;
 use App\Modules\HorizonDashboard\HorizonDashboardServiceProvider;
@@ -15,6 +16,7 @@ return [
     AppServiceProvider::class,
     ConceptRegistryServiceProvider::class,
     HorizonServiceProvider::class,
+    AuditLogServiceProvider::class,
     CacheBenchmarkServiceProvider::class,
     CustomCastsServiceProvider::class,
     HorizonDashboardServiceProvider::class,
