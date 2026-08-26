@@ -6,6 +6,7 @@ use App\Modules\HorizonDashboard\HorizonDashboardServiceProvider;
 use App\Modules\JobProgress\JobProgressServiceProvider;
 use App\Modules\RateLimitDemo\RateLimitDemoServiceProvider;
 use App\Modules\SemanticSearch\SemanticSearchServiceProvider;
+use App\Modules\SignedUrlExpiry\SignedUrlExpiryServiceProvider;
 use App\Platform\ConceptRegistryServiceProvider;
 use App\Providers\AppServiceProvider;
 use App\Providers\HorizonServiceProvider;
@@ -20,4 +21,5 @@ return [
     JobProgressServiceProvider::class,
     RateLimitDemoServiceProvider::class,
     SemanticSearchServiceProvider::class,
+    SignedUrlExpiryServiceProvider::class,
 ];
