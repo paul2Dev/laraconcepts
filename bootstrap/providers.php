@@ -4,6 +4,7 @@ use App\Modules\AuditLog\AuditLogServiceProvider;
 use App\Modules\CacheBenchmark\CacheBenchmarkServiceProvider;
 use App\Modules\CustomCasts\CustomCastsServiceProvider;
 use App\Modules\HorizonDashboard\HorizonDashboardServiceProvider;
+use App\Modules\ImageSimilarity\ImageSimilarityServiceProvider;
 use App\Modules\JobProgress\JobProgressServiceProvider;
 use App\Modules\RateLimitDemo\RateLimitDemoServiceProvider;
 use App\Modules\SemanticSearch\SemanticSearchServiceProvider;
@@ -20,6 +21,7 @@ return [
     CacheBenchmarkServiceProvider::class,
     CustomCastsServiceProvider::class,
     HorizonDashboardServiceProvider::class,
+    ImageSimilarityServiceProvider::class,
     JobProgressServiceProvider::class,
     RateLimitDemoServiceProvider::class,
     SemanticSearchServiceProvider::class,
