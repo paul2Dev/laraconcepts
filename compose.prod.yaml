@@ -20,7 +20,7 @@ services:
                 VITE_APP_NAME: '${APP_NAME:-Laravel Concepts}'
                 VITE_REVERB_APP_KEY: '${REVERB_APP_KEY}'
                 VITE_REVERB_HOST: '${REVERB_HOST}'
-                VITE_REVERB_PORT: '${VITE_REVERB_PORT:-443}'
+                VITE_REVERB_PORT: '${REVERB_PORT:-443}'
                 VITE_REVERB_SCHEME: '${REVERB_SCHEME:-https}'
         restart: unless-stopped
         # No host port publish here on purpose — Coolify's Traefik proxy
