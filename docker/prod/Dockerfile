@@ -50,9 +50,12 @@ FROM php:8.4-cli-bookworm AS runtime
 RUN apt-get update && apt-get install -y --no-install-recommends \
         libonig-dev \
         libxml2-dev \
+        libjpeg62-turbo-dev \
+        libpng-dev \
         unzip \
         supervisor \
-    && docker-php-ext-install pdo_mysql bcmath opcache mbstring dom xml simplexml xmlwriter pcntl \
+    && docker-php-ext-configure gd --with-jpeg \
+    && docker-php-ext-install pdo_mysql bcmath opcache mbstring dom xml simplexml xmlwriter pcntl gd \
     && pecl install redis \
     && docker-php-ext-enable redis \
     && rm -rf /var/lib/apt/lists/*
