@@ -11,15 +11,14 @@ demo route 503 immediately, even though `/horizon` itself is still mounted under
 
 ## How it works
 
-**Two independent gates, same as `rate-limit-demo`.** The Pennant flag
-(`Feature::active('horizon-dashboard')`) is this module's own gate, checked in
-`HorizonDashboardController::show()` before the redirect is issued. Horizon ships with
-its own separate gate (`viewHorizon`, defined in `App\Providers\HorizonServiceProvider`,
-published by `horizon:install`) that protects `/horizon` itself regardless of this
-module — in the `local` environment Horizon's `Authorize` middleware allows everyone
-through automatically, so both gates pass locally. In a non-local environment, someone
-could have the Pennant flag on and still hit Horizon's own `viewHorizon` gate — that gate
-is Horizon's concern, not this module's, and this module doesn't touch it.
+**One flag, checked in two places.** The Pennant flag (`Feature::active('horizon-dashboard')`)
+gates `HorizonDashboardController::show()` before the redirect is issued, and also backs
+Horizon's own `viewHorizon` gate (`App\Providers\HorizonServiceProvider::gate()`, published by
+`horizon:install`), which protects `/horizon` itself regardless of this module's route. In the
+`local` environment Horizon's `Authorize` middleware bypasses `viewHorizon` entirely, so the
+demo route's own check is the only thing you see locally; in production `viewHorizon` is what
+actually runs, and it defers to the same flag — no separate allowlist to maintain, and hitting
+`/horizon` directly (bypassing the demo route) is gated the same way.
 
 **`QUEUE_CONNECTION` moved to `redis`, the connection Horizon supervises.** `redis` was
 already defined as a queue connection in `config/queue.php` (using the `default` Redis

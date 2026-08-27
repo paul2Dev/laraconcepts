@@ -2,9 +2,11 @@
 
 namespace App\Providers;
 
+use App\Modules\HorizonDashboard\HorizonDashboardServiceProvider;
 use Illuminate\Support\Facades\Gate;
 use Laravel\Horizon\Horizon;
 use Laravel\Horizon\HorizonApplicationServiceProvider;
+use Laravel\Pennant\Feature;
 
 class HorizonServiceProvider extends HorizonApplicationServiceProvider
 {
@@ -27,10 +29,11 @@ class HorizonServiceProvider extends HorizonApplicationServiceProvider
      */
     protected function gate(): void
     {
+        // This app has no user auth, so the usual email-allowlist pattern doesn't
+        // apply — access to /horizon itself is tied to the same Pennant flag the
+        // horizon-dashboard demo route already gates, so toggling it controls both.
         Gate::define('viewHorizon', function ($user = null) {
-            return in_array(optional($user)->email, [
-                //
-            ]);
+            return Feature::active(HorizonDashboardServiceProvider::SLUG);
         });
     }
 }
