@@ -65,7 +65,7 @@ In Coolify, point a new resource at this repo with `compose.prod.yaml` as the co
 | `APP_URL` | yes | The public HTTPS URL of the web app, e.g. `https://laraconcepts.paul2dev.com`. |
 | `DB_PASSWORD` | 🔒 yes | Also used as the MySQL root password. |
 | `REVERB_APP_ID` / `REVERB_APP_KEY` / `REVERB_APP_SECRET` | 🔒 yes | Any values — these just need to match between the server and the client build (`php artisan reverb:start` doesn't generate them for you; pick any non-empty strings, e.g. `openssl rand -hex 16`). |
-| `REVERB_HOST` | yes | The public hostname the *browser* connects to for WebSockets — a separate domain/subdomain from `APP_URL`, e.g. `ws.laraconcepts.paul2dev.com`. Also passed as a build arg (`VITE_REVERB_HOST`), since Echo reads it from the compiled JS bundle, not a runtime env var. |
+| `REVERB_PUBLIC_HOST` | yes | The public hostname the *browser* connects to for WebSockets — a separate domain/subdomain from `APP_URL`, e.g. `ws.laraconcepts.paul2dev.com`. Only used as a build arg (`VITE_REVERB_HOST`), since Echo reads it from the compiled JS bundle, not a runtime env var. Not the same as the runtime `REVERB_HOST`, which is hardcoded to `127.0.0.1` in `compose.prod.yaml` — see below. |
 | `APP_NAME` | no | Defaults to `Laravel Concepts`. |
 | `DB_DATABASE` / `DB_USERNAME` | no | Default to `laraconcepts` / `laraconcepts`. |
 | `SESSION_DOMAIN` | no | Leave unset unless the app is served from a subdomain that needs the session cookie shared with a parent domain. |
@@ -79,7 +79,9 @@ Reverb isn't a separate container — it's the third supervisord process inside 
 https://laraconcepts.paul2dev.com,https://ws.laraconcepts.paul2dev.com:8081
 ```
 
-`REVERB_HOST` must be set to the second domain's hostname (without scheme/port) so both the server-side `broadcasting.php` config and the client-side Echo bundle point at it.
+`REVERB_PUBLIC_HOST` must be set to the second domain's hostname (without scheme/port) so the client-side Echo bundle points at it.
+
+**Two different meanings of "Reverb host."** The browser needs the public domain above — there's no other way for it to reach Reverb. But Horizon triggering a broadcast runs in the *same container* as Reverb, so routing that call through the public domain and back in through Coolify's proxy is pure overhead, and in practice failed outright with a TLS handshake error (`cURL error 35: ... SSL routines::sslv3 alert handshake failure`). `compose.prod.yaml` hardcodes the runtime `REVERB_HOST`/`REVERB_PORT`/`REVERB_SCHEME` (what `config/broadcasting.php`'s `reverb` connection uses to call Reverb's HTTP API) to `127.0.0.1:8081` over plain HTTP instead — the same loopback pattern local dev already uses (`REVERB_HOST=localhost` in `.env.example`).
 
 `APP_URL`'s scheme and `bootstrap/app.php`'s `trustProxies(at: '*')` together are what make redirects and session cookies resolve to `https://` correctly behind Coolify's reverse proxy — the app container itself only ever speaks plain HTTP on its internal ports.
 

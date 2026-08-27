@@ -16,12 +16,15 @@ services:
                 # Baked into the built JS at image build time — see the
                 # Dockerfile's frontend-build stage. None of these are
                 # secret: REVERB_APP_KEY is the public client key, not the
-                # broadcasting secret.
+                # broadcasting secret. REVERB_PUBLIC_HOST is deliberately a
+                # separate var from the REVERB_HOST below — this one is what
+                # the *browser* connects to (the public domain, always TLS
+                # on 443), not what the server uses internally.
                 VITE_APP_NAME: '${APP_NAME:-Laravel Concepts}'
                 VITE_REVERB_APP_KEY: '${REVERB_APP_KEY}'
-                VITE_REVERB_HOST: '${REVERB_HOST}'
-                VITE_REVERB_PORT: '${REVERB_PORT:-443}'
-                VITE_REVERB_SCHEME: '${REVERB_SCHEME:-https}'
+                VITE_REVERB_HOST: '${REVERB_PUBLIC_HOST}'
+                VITE_REVERB_PORT: '443'
+                VITE_REVERB_SCHEME: 'https'
         restart: unless-stopped
         # No host port publish here on purpose — Coolify's Traefik proxy
         # reaches this container over the internal Docker network by its
@@ -66,13 +69,17 @@ services:
             # unrelated to the public host/port the browser connects to.
             REVERB_SERVER_HOST: '0.0.0.0'
             REVERB_SERVER_PORT: '8081'
-            # Client-facing — the public domain Coolify routes to port 8081
-            # (see README), always TLS-terminated there, so scheme/port
-            # here are https/443 regardless of the container's internal
-            # plain-HTTP port.
-            REVERB_HOST: '${REVERB_HOST}'
-            REVERB_PORT: '${REVERB_PORT:-443}'
-            REVERB_SCHEME: '${REVERB_SCHEME:-https}'
+            # This is what triggers broadcasts (Horizon, in this same
+            # container, calling Reverb's HTTP API) — always loopback/plain
+            # HTTP, since server and Reverb share one container. Routing
+            # this through the public domain/TLS instead (as REVERB_HOST
+            # alone would suggest) round-trips through Coolify's proxy for
+            # no reason and has failed there with a TLS handshake error.
+            # The browser-facing host is VITE_REVERB_HOST above, sourced
+            # from the separate REVERB_PUBLIC_HOST var.
+            REVERB_HOST: '127.0.0.1'
+            REVERB_PORT: '8081'
+            REVERB_SCHEME: 'http'
         depends_on:
             mysql:
                 condition: service_healthy
