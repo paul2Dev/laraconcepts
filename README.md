@@ -53,6 +53,36 @@ public function boot(ConceptRegistry $registry): void
 
 That's the whole recipe: folder + `ServiceProvider` + one line in `bootstrap/providers.php`.
 
+## Deployment (Coolify)
+
+[`compose.prod.yaml`](compose.prod.yaml) + [`docker/prod/Dockerfile`](docker/prod/Dockerfile) are a separate, production-only setup — not the Sail `compose.yaml` used for local dev. The image is fully built (composer deps, `npm run build`) rather than bind-mounting the repo, and runs three processes under supervisord: the web server, the Horizon queue worker (see `app/Modules/HorizonDashboard`), and the Reverb WebSocket server (see `app/Modules/JobProgress`). On container start, `docker/prod/entrypoint.sh` runs `php artisan migrate --force` (safe on every deploy — a no-op with nothing pending) before starting supervisord.
+
+In Coolify, point a new resource at this repo with `compose.prod.yaml` as the compose file. It needs these environment variables (mark the ones below with 🔒 as secrets):
+
+| Variable | Required | Notes |
+|---|---|---|
+| `APP_KEY` | 🔒 yes | Generate with `php artisan key:generate --show` (run once, locally or in any PHP container) and paste the `base64:...` value — don't run `key:generate` in production itself, since a fresh key would invalidate every existing session/encrypted cookie on every deploy. |
+| `APP_URL` | yes | The public HTTPS URL of the web app, e.g. `https://laraconcepts.paul2dev.com`. |
+| `DB_PASSWORD` | 🔒 yes | Also used as the MySQL root password. |
+| `REVERB_APP_ID` / `REVERB_APP_KEY` / `REVERB_APP_SECRET` | 🔒 yes | Any values — these just need to match between the server and the client build (`php artisan reverb:start` doesn't generate them for you; pick any non-empty strings, e.g. `openssl rand -hex 16`). |
+| `REVERB_HOST` | yes | The public hostname the *browser* connects to for WebSockets — a separate domain/subdomain from `APP_URL`, e.g. `ws.laraconcepts.paul2dev.com`. Also passed as a build arg (`VITE_REVERB_HOST`), since Echo reads it from the compiled JS bundle, not a runtime env var. |
+| `APP_NAME` | no | Defaults to `Laravel Concepts`. |
+| `DB_DATABASE` / `DB_USERNAME` | no | Default to `laraconcepts` / `laraconcepts`. |
+| `SESSION_DOMAIN` | no | Leave unset unless the app is served from a subdomain that needs the session cookie shared with a parent domain. |
+| `REDIS_PASSWORD` | no | Leave unset — the bundled `redis` service has no `requirepass` configured and isn't exposed outside this compose network, so setting a password here would just break the connection (phpredis would send `AUTH` to a server that isn't expecting one). |
+
+### Wiring up Reverb's second port
+
+Reverb isn't a separate container — it's the third supervisord process inside the same `app` container/image, listening on its own port (`8081`) next to the web app's `8080`. Coolify's single "Domains" field on the `app` resource accepts a comma-separated list of FQDNs, each optionally suffixed with `:PORT` to say which container port that domain routes to (the first one with no suffix falls back to the resource's default port, `8080`). So this one field needs both domains, e.g.:
+
+```
+https://laraconcepts.paul2dev.com,https://ws.laraconcepts.paul2dev.com:8081
+```
+
+`REVERB_HOST` must be set to the second domain's hostname (without scheme/port) so both the server-side `broadcasting.php` config and the client-side Echo bundle point at it.
+
+`APP_URL`'s scheme and `bootstrap/app.php`'s `trustProxies(at: '*')` together are what make redirects and session cookies resolve to `https://` correctly behind Coolify's reverse proxy — the app container itself only ever speaks plain HTTP on its internal ports.
+
 ## Concepts
 
 **Search & AI**

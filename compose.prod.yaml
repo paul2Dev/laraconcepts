@@ -1,0 +1,121 @@
+# Production/Coolify deployment. Not used for local development — see
+# compose.yaml (Sail) for that. This builds a self-contained image
+# (docker/prod/Dockerfile) instead of bind-mounting the repo, and every
+# env var the app needs in production is listed explicitly below so this
+# file doubles as the documentation of what Coolify needs to provide.
+#
+# `${VAR}` with no default is required; `${VAR:-default}` has a sane
+# fallback. See README.md's "Deployment" section for what each one is and
+# which ones should be marked as secrets in Coolify.
+services:
+    app:
+        build:
+            context: .
+            dockerfile: docker/prod/Dockerfile
+            args:
+                # Baked into the built JS at image build time — see the
+                # Dockerfile's frontend-build stage. None of these are
+                # secret: REVERB_APP_KEY is the public client key, not the
+                # broadcasting secret.
+                VITE_APP_NAME: '${APP_NAME:-Laravel Concepts}'
+                VITE_REVERB_APP_KEY: '${REVERB_APP_KEY}'
+                VITE_REVERB_HOST: '${REVERB_HOST}'
+                VITE_REVERB_PORT: '${VITE_REVERB_PORT:-443}'
+                VITE_REVERB_SCHEME: '${REVERB_SCHEME:-https}'
+        restart: unless-stopped
+        # No host port publish here on purpose — Coolify's Traefik proxy
+        # reaches this container over the internal Docker network by its
+        # container port (see the app's "Domains" config in Coolify),
+        # never through a host-bound port. 8080 is the web app; 8081 is
+        # Reverb's WebSocket server and needs its own Coolify domain.
+        expose:
+            - '8080'
+            - '8081'
+        environment:
+            APP_NAME: '${APP_NAME:-Laravel Concepts}'
+            APP_ENV: production
+            APP_KEY: '${APP_KEY}'
+            APP_DEBUG: 'false'
+            APP_URL: '${APP_URL}'
+
+            LOG_CHANNEL: stack
+            LOG_LEVEL: '${LOG_LEVEL:-error}'
+
+            DB_CONNECTION: mysql
+            DB_HOST: '${DB_HOST:-mysql}'
+            DB_PORT: '${DB_PORT:-3306}'
+            DB_DATABASE: '${DB_DATABASE:-laraconcepts}'
+            DB_USERNAME: '${DB_USERNAME:-laraconcepts}'
+            DB_PASSWORD: '${DB_PASSWORD}'
+
+            SESSION_DRIVER: database
+            SESSION_DOMAIN: '${SESSION_DOMAIN:-}'
+
+            CACHE_STORE: redis
+            QUEUE_CONNECTION: redis
+            REDIS_CLIENT: phpredis
+            REDIS_HOST: '${REDIS_HOST:-redis}'
+            REDIS_PORT: '${REDIS_PORT:-6379}'
+            REDIS_PASSWORD: '${REDIS_PASSWORD:-null}'
+
+            BROADCAST_CONNECTION: reverb
+            REVERB_APP_ID: '${REVERB_APP_ID}'
+            REVERB_APP_KEY: '${REVERB_APP_KEY}'
+            REVERB_APP_SECRET: '${REVERB_APP_SECRET}'
+            # Server-side bind — always 0.0.0.0:8081 inside the container,
+            # unrelated to the public host/port the browser connects to.
+            REVERB_SERVER_HOST: '0.0.0.0'
+            REVERB_SERVER_PORT: '8081'
+            # Client-facing — the public domain Coolify routes to port 8081
+            # (see README), always TLS-terminated there, so scheme/port
+            # here are https/443 regardless of the container's internal
+            # plain-HTTP port.
+            REVERB_HOST: '${REVERB_HOST}'
+            REVERB_PORT: '${REVERB_PORT:-443}'
+            REVERB_SCHEME: '${REVERB_SCHEME:-https}'
+        depends_on:
+            mysql:
+                condition: service_healthy
+            redis:
+                condition: service_healthy
+        networks:
+            - laraconcepts
+
+    mysql:
+        image: 'mysql:9'
+        restart: unless-stopped
+        environment:
+            MYSQL_DATABASE: '${DB_DATABASE:-laraconcepts}'
+            MYSQL_USER: '${DB_USERNAME:-laraconcepts}'
+            MYSQL_PASSWORD: '${DB_PASSWORD}'
+            MYSQL_ROOT_PASSWORD: '${DB_PASSWORD}'
+        volumes:
+            - 'laraconcepts-mysql:/var/lib/mysql'
+        networks:
+            - laraconcepts
+        healthcheck:
+            test: ['CMD', 'mysqladmin', 'ping', '-p${DB_PASSWORD}']
+            retries: 3
+            timeout: 5s
+
+    redis:
+        image: 'redis:alpine'
+        restart: unless-stopped
+        volumes:
+            - 'laraconcepts-redis:/data'
+        networks:
+            - laraconcepts
+        healthcheck:
+            test: ['CMD', 'redis-cli', 'ping']
+            retries: 3
+            timeout: 5s
+
+networks:
+    laraconcepts:
+        driver: bridge
+
+volumes:
+    laraconcepts-mysql:
+        driver: local
+    laraconcepts-redis:
+        driver: local

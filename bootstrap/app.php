@@ -13,7 +13,13 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        // In production the app only ever receives traffic through Coolify's
+        // reverse proxy (never directly from the internet), so its
+        // X-Forwarded-* headers are trusted. Without this, HTTPS termination
+        // at the proxy is invisible to Laravel — url()/redirects resolve to
+        // http://, and secure session cookies never get marked secure since
+        // $request->isSecure() sees a plain HTTP request.
+        $middleware->trustProxies(at: '*');
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
