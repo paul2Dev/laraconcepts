@@ -7,6 +7,7 @@ use App\Modules\HorizonDashboard\HorizonDashboardServiceProvider;
 use App\Modules\ImageSimilarity\ImageSimilarityServiceProvider;
 use App\Modules\ImageTextSearch\ImageTextSearchServiceProvider;
 use App\Modules\JobProgress\JobProgressServiceProvider;
+use App\Modules\LiveNotifications\LiveNotificationsServiceProvider;
 use App\Modules\RateLimitDemo\RateLimitDemoServiceProvider;
 use App\Modules\SemanticSearch\SemanticSearchServiceProvider;
 use App\Modules\SignedUrlExpiry\SignedUrlExpiryServiceProvider;
@@ -25,6 +26,7 @@ return [
     ImageSimilarityServiceProvider::class,
     ImageTextSearchServiceProvider::class,
     JobProgressServiceProvider::class,
+    LiveNotificationsServiceProvider::class,
     RateLimitDemoServiceProvider::class,
     SemanticSearchServiceProvider::class,
     SignedUrlExpiryServiceProvider::class,
