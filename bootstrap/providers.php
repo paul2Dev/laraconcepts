@@ -8,6 +8,7 @@ use App\Modules\ImageSimilarity\ImageSimilarityServiceProvider;
 use App\Modules\ImageTextSearch\ImageTextSearchServiceProvider;
 use App\Modules\JobProgress\JobProgressServiceProvider;
 use App\Modules\LiveNotifications\LiveNotificationsServiceProvider;
+use App\Modules\Presence\PresenceServiceProvider;
 use App\Modules\RateLimitDemo\RateLimitDemoServiceProvider;
 use App\Modules\SemanticSearch\SemanticSearchServiceProvider;
 use App\Modules\SignedUrlExpiry\SignedUrlExpiryServiceProvider;
@@ -27,6 +28,7 @@ return [
     ImageTextSearchServiceProvider::class,
     JobProgressServiceProvider::class,
     LiveNotificationsServiceProvider::class,
+    PresenceServiceProvider::class,
     RateLimitDemoServiceProvider::class,
     SemanticSearchServiceProvider::class,
     SignedUrlExpiryServiceProvider::class,
