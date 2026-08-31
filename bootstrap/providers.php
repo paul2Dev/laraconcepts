@@ -7,6 +7,7 @@ use App\Modules\HorizonDashboard\HorizonDashboardServiceProvider;
 use App\Modules\ImageSimilarity\ImageSimilarityServiceProvider;
 use App\Modules\ImageTextSearch\ImageTextSearchServiceProvider;
 use App\Modules\JobProgress\JobProgressServiceProvider;
+use App\Modules\LiveCollab\LiveCollabServiceProvider;
 use App\Modules\LiveNotifications\LiveNotificationsServiceProvider;
 use App\Modules\Presence\PresenceServiceProvider;
 use App\Modules\RateLimitDemo\RateLimitDemoServiceProvider;
@@ -27,6 +28,7 @@ return [
     ImageSimilarityServiceProvider::class,
     ImageTextSearchServiceProvider::class,
     JobProgressServiceProvider::class,
+    LiveCollabServiceProvider::class,
     LiveNotificationsServiceProvider::class,
     PresenceServiceProvider::class,
     RateLimitDemoServiceProvider::class,
